@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>No Further Action at This Time</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      margin: 0; font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: #0b0c10; color: #e6e6e6;
+    }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 20px; }
+    .card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+    h1 { font-size: 26px; margin: 0 0 8px; letter-spacing: 0.2px; }
+    .sub { opacity: 0.85; margin: 0 0 14px; }
+    .meta {
+      display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0 0;
+      font-size: 13px; opacity: 0.85;
+    }
+    .pill {
+      padding: 6px 10px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.04);
+    }
+    .prompt { font-size: 18px; margin: 10px 0 14px; }
+    .body { white-space: pre-wrap; margin: 0 0 16px; opacity: 0.95; }
+    .btns { display: grid; gap: 10px; margin-top: 8px; }
+    button {
+      appearance: none; border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.06); color: inherit;
+      padding: 12px 14px; border-radius: 12px; cursor: pointer;
+      text-align: left; transition: transform 0.04s ease, background 0.15s ease;
+    }
+    button:hover { background: rgba(255,255,255,0.10); }
+    button:active { transform: translateY(1px); }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .smallbtn { font-size: 13px; padding: 8px 10px; border-radius: 10px; opacity: 0.95; }
+    .muted { opacity: 0.78; font-size: 13px; margin-top: 10px; }
+    details { margin-top: 10px; }
+    summary { cursor: pointer; opacity: 0.9; }
+    .foot { opacity: 0.75; font-size: 12px; margin-top: 14px; }
+    a { color: #9fd3ff; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" id="app" aria-live="polite">
+      <h1 id="title"></h1>
+      <p class="sub" id="subtitle"></p>
+
+      <div class="meta">
+        <div class="pill" id="stat-reports">Reports: 0</div>
+        <div class="pill" id="stat-referrals">Referrals: 0</div>
+        <div class="pill" id="stat-loops">Loops: 0</div>
+      </div>
+
+      <div class="prompt" id="prompt"></div>
+      <div class="body" id="body"></div>
+
+      <div class="btns" id="choices"></div>
+
+      <div class="row">
+        <button class="smallbtn" id="backBtn" type="button">← Back</button>
+        <button class="smallbtn" id="restartBtn" type="button">↻ Start again</button>
+        <button class="smallbtn" id="shareBtn" type="button">⤴ Share</button>
+      </div>
+
+      <details id="sourcesBox">
+        <summary>Official wording referenced (links)</summary>
+        <div class="foot" id="sources"></div>
+      </details>
+
+      <div class="foot" id="footer"></div>
+    </div>
+  </div>
+
+<script>
+/**
+ * “No Further Action at This Time”
+ * Lightweight state machine + Ealing phrasing (see SOURCES below)
+ */
+const SOURCES = [
+  { label: "Report a noise nuisance (020 8825 8111)", url: "https://www.ealing.gov.uk/info/201146/neighbourhood_and_streets/2053/noise_nuisances/2" },
+  { label: "Investigating your complaint (logging sheets)", url: "https://www.ealing.gov.uk/info/201146/neighbourhood_and_streets/2053/noise_nuisances/3" },
+  { label: "Dust and odours from commercial premises (statutory nuisance test)", url: "https://www.ealing.gov.uk/info/201199/air_quality/2057/dust_and_odours_from_commercial_premises" },
+  { label: "Report an air pollution problem (020 8825 8111)", url: "https://www.ealing.gov.uk/info/201199/air_quality/2058/report_an_air_pollution_problem" },
+  { label: "Industrial pollution control (pollution-technical@)", url: "https://www.ealing.gov.uk/info/201151/pollution/573/industrial_pollution_control" },
+  { label: "Southall Gasworks: Air monitoring (sniff tests)", url: "https://www.ealing.gov.uk/info/201283/our_neighbourhoods/2613/southall_gasworks/4" },
+  { label: "Southall Gasworks: Reporting concerns (OdourCollect/email)", url: "https://www.ealing.gov.uk/info/201283/our_neighbourhoods/2613/southall_gasworks/6" },
+];
+
+const DATA = {
+  appTitle: "No Further Action at This Time",
+  subtitle: "An interactive guide based on real complaints and official web guidance.",
+  footer: "Tip: this works as a standalone file. Upload it anywhere and it’ll run.",
+  nodes: {
+    start: {
+      title: "Report a nuisance in Ealing",
+      prompt: "You are experiencing a recurring problem that affects your quality of life.",
+      body: "Choose what best matches what you’re experiencing.",
+      choices: [
+        { text: "Noise", to: "categorise_noise", effect: { reports: 1 } },
+        { text: "Smell / odour", to: "categorise_odour", effect: { reports: 1 } },
+        { text: "Dust / fumes", to: "categorise_odour", effect: { reports: 1 } },
+        { text: "A combination of the above", to: "categorise_combo", effect: { reports: 1 } },
+      ],
+    },
+
+    categorise_noise: {
+      title: "Noise nuisances",
+      prompt: "To proceed, you must identify what kind of noise it is.",
+      body:
+`Ealing’s noise nuisance guidance describes noise relating to residential and commercial premises, including construction noise and noise from commercial properties caused by industrial machinery.
+
+Now pick the category that best fits.`,
+      choices: [
+        { text: "Neighbour / residential noise", to: "noise_now" },
+        { text: "Commercial / industrial noise", to: "noise_now" },
+        { text: "Construction noise", to: "noise_now" },
+        { text: "I’m not sure", to: "guidance_loop", effect: { loops: 1 } },
+      ],
+    },
+
+    categorise_odour: {
+      title: "Dust and odours from commercial premises",
+      prompt: "To proceed, you must identify whether it’s dust/odour from commercial premises, or a broader air pollution concern.",
+      body:
+`Ealing states that regulatory services officers will investigate complaints about dust and odours from commercial premises to assess whether a statutory nuisance exists.
+
+Choose the route you think applies.`,
+      choices: [
+        { text: "Dust/odour from a business premises", to: "odour_statutory", effect: { referrals: 1 } },
+        { text: "General air pollution concern", to: "air_pollution", effect: { referrals: 1 } },
+        { text: "I’m not sure", to: "guidance_loop", effect: { loops: 1 } },
+      ],
+    },
+
+    categorise_combo: {
+      title: "Mixed nuisance",
+      prompt: "It’s more than one thing at once.",
+      body:
+`The lived experience is often mixed: noise + odour, dust + fumes, sometimes all at once.
+
+The system prefers one label. Pick the one you think will get traction (you can always report again).`,
+      choices: [
+        { text: "Treat it as NOISE (for a response visit)", to: "noise_now", effect: { referrals: 1 } },
+        { text: "Treat it as DUST/ODOUR (statutory nuisance test)", to: "odour_statutory", effect: { referrals: 1 } },
+        { text: "Treat it as AIR POLLUTION (general concern)", to: "air_pollution", effect: { referrals: 1 } },
+        { text: "I’m not sure", to: "guidance_loop", effect: { loops: 1 } },
+      ],
+    },
+
+    guidance_loop: {
+      title: "Guidance pages",
+      prompt: "You review the guidance.",
+      body:
+`The guidance explains categories, processes, and responsibilities.
+
+It does not confirm that you’ve chosen the correct route.
+
+You return to choose again.`,
+      choices: [
+        { text: "Try again: Noise", to: "categorise_noise", effect: { loops: 1 } },
+        { text: "Try again: Odour / dust / fumes", to: "categorise_odour", effect: { loops: 1 } },
+        { text: "Try again: Mixed", to: "categorise_combo", effect: { loops: 1 } },
+      ],
+    },
+
+    noise_now: {
+      title: "Report a noise nuisance",
+      prompt: "Is the noise happening now?",
+      body:
+`Ealing’s guidance says: “To report a noise nuisance happening now telephone 020 8825 8111.”
+
+Pick what happens next.`,
+      choices: [
+        { text: "Yes, it’s happening now → I call 020 8825 8111", to: "noise_visit", effect: { referrals: 1 } },
+        { text: "No, it comes and goes → I report anyway", to: "noise_logging", effect: { referrals: 1 } },
+        { text: "I try a different route", to: "categorise_combo", effect: { loops: 1 } },
+      ],
+    },
+
+    noise_visit: {
+      title: "Response visit",
+      prompt: "You request a visit to assess the noise when it is occurring.",
+      body:
+`Ealing’s process notes you may contact the response service to request a visit to assess the noise when it is occurring.
+
+Outcome varies. If the noise stops before anyone arrives, the visit can’t witness an incident.`,
+      choices: [
+        { text: "The noise stops before anyone arrives", to: "noise_logging", effect: { loops: 1 } },
+        { text: "A visit happens and the noise is witnessed", to: "await_outcome" },
+        { text: "I report again next time", to: "noise_now", effect: { reports: 1, loops: 1 } },
+      ],
+    },
+
+    noise_logging: {
+      title: "Logging sheets",
+      prompt: "You are asked to keep records.",
+      body:
+`Ealing’s guidance says: “We will send you logging sheets for you to record the dates and times of any further noise nuisance.”
+
+Records can help identify patterns and assist in scheduling visits to witness an incident.`,
+      choices: [
+        { text: "I fill in logging sheets", to: "await_outcome" },
+        { text: "I also call when it happens (020 8825 8111)", to: "noise_now", effect: { reports: 1, referrals: 1 } },
+        { text: "I switch route (it’s also odour/dust)", to: "categorise_odour", effect: { loops: 1 } },
+      ],
+    },
+
+    odour_statutory: {
+      title: "Assess whether a statutory nuisance exists",
+      prompt: "Your complaint is assessed.",
+      body:
+`Ealing states that regulatory services officers will investigate complaints about dust and odours from commercial premises “in order to assess whether a statutory nuisance exists.”
+
+You are now in the assessment process.`,
+      choices: [
+        { text: "Provide details, dates, times, frequency", to: "await_outcome" },
+        { text: "Report again when it happens", to: "categorise_odour", effect: { reports: 1, loops: 1 } },
+        { text: "Escalate: I think it’s an industrial installation", to: "industrial_control", effect: { referrals: 1 } },
+      ],
+    },
+
+    air_pollution: {
+      title: "Report an air pollution problem",
+      prompt: "You report concerns about air pollution.",
+      body:
+`Ealing’s air pollution reporting guidance includes: “To report concerns about air pollution telephone 020 8825 8111.”
+
+Pick what happens next.`,
+      choices: [
+        { text: "I call 020 8825 8111", to: "await_outcome", effect: { referrals: 1 } },
+        { text: "I look for a more specific route", to: "categorise_combo", effect: { loops: 1 } },
+        { text: "This relates to Southall Gasworks / known site", to: "southall_routes", effect: { referrals: 1 } },
+      ],
+    },
+
+    industrial_control: {
+      title: "Industrial pollution control",
+      prompt: "You suspect a permitted installation or regulated process.",
+      body:
+`Ealing explains that if an installation is causing an unacceptable level of pollution, it will work with the operator to ensure problems are sorted out as quickly as possible.
+
+To see details of particular premises, it says to email: pollution-technical@ealing.gov.uk`,
+      choices: [
+        { text: "Email pollution-technical@ealing.gov.uk", to: "await_outcome", effect: { referrals: 1 } },
+        { text: "Go back (I’m not sure this is the right category)", to: "categorise_odour", effect: { loops: 1 } },
+        { text: "Report again next time", to: "categorise_combo", effect: { reports: 1, loops: 1 } },
+      ],
+    },
+
+    southall_routes: {
+      title: "Reporting air quality concerns (site-specific)",
+      prompt: "You choose a site-specific reporting route.",
+      body:
+`Ealing’s Southall Gasworks reporting page encourages residents to report problems using the OdourCollect app or by email to southallodours@ealing.gov.uk for prompt action.
+
+It also notes a phone number for leaving messages during weekday hours.`,
+      choices: [
+        { text: "Use OdourCollect app", to: "await_outcome", effect: { referrals: 1 } },
+        { text: "Email southallodours@ealing.gov.uk", to: "await_outcome", effect: { referrals: 1 } },
+        { text: "Go back (use general routes instead)", to: "categorise_combo", effect: { loops: 1 } },
+      ],
+    },
+
+    await_outcome: {
+      title: "Await outcome",
+      prompt: "Thank you. Your report has been logged.",
+      body:
+`At this point, you may receive:
+• a request for more evidence
+• advice to keep records
+• reassurance that monitoring is taking place
+• or no update at all
+
+If the nuisance continues, you can report it again.`,
+      choices: [
+        { text: "The nuisance continues → report again", to: "start", effect: { reports: 1, loops: 1 } },
+        { text: "I read the monitoring/reassurance updates", to: "reassurance" },
+        { text: "Stop engaging", to: "end_silence" },
+      ],
+    },
+
+    reassurance: {
+      title: "Monitoring and reassurance",
+      prompt: "You encounter monitoring language.",
+      body:
+`Ealing’s Southall monitoring update states that monitors have been deployed to detect potential dust and noise nuisance from building activities, and that odours are monitored by technical staff who carry out ‘sniff’ tests on the site and in surrounding areas.
+
+It also notes comparisons against health-based standards and odour thresholds.`,
+      choices: [
+        { text: "This doesn’t reflect my lived experience", to: "role_reversal", effect: { loops: 1 } },
+        { text: "Okay", to: "end_silence" },
+        { text: "Report again anyway", to: "start", effect: { reports: 1, loops: 1 } },
+      ],
+    },
+
+    role_reversal: {
+      title: "Repeat contact",
+      prompt: "You have made multiple reports about the same issue.",
+      body:
+`You have kept records. You have reported promptly. You have followed the guidance.
+
+The system now becomes interested in your persistence.`,
+      choices: [
+        { text: "Continue reporting", to: "end_you_are_the_nuisance", effect: { loops: 1 } },
+        { text: "Seek external advice", to: "end_you_are_the_nuisance", effect: { loops: 1 } },
+        { text: "Stop engaging", to: "end_silence" },
+      ],
+    },
+
+    end_silence: {
+      title: "No further action at this time",
+      prompt: "From the outside, things look calmer.",
+      body:
+`Either the nuisance stops (temporarily), or you stop reporting it.
+
+From the outside, both outcomes look the same:
+complaint volume decreases.`,
+      choices: [
+        { text: "Start again", to: "start" },
+        { text: "Share this", to: "share" },
+      ],
+    },
+
+    end_you_are_the_nuisance: {
+      title: "Final diagnosis",
+      prompt: "At this point, the system has successfully identified the problem.",
+      body:
+`The noise may still be happening.
+The smell may still be there.
+
+But the process has reached clarity:
+
+THE PROBLEM IS YOU.`,
+      choices: [
+        { text: "Start again", to: "start" },
+        { text: "Share this", to: "share" },
+      ],
+    },
+
+    share: {
+      title: "Share",
+      prompt: "Copy a link or screenshot this page.",
+      body:
+`If you host this file on your site, share that URL.
+
+If you’re reading it locally, a screenshot works just fine.
+
+(You can also add a “Real stories” button to point at your posts.)`,
+      choices: [
+        { text: "Back to start", to: "start" },
+      ],
+    },
+  }
+};
+
+const $ = (id) => document.getElementById(id);
+
+let state = {
+  nodeId: "start",
+  history: [],
+  stats: { reports: 0, referrals: 0, loops: 0 },
+};
+
+function applyEffect(effect) {
+  if (!effect) return;
+  for (const [k, v] of Object.entries(effect)) {
+    state.stats[k] = (state.stats[k] || 0) + v;
+  }
+}
+
+function render() {
+  const node = DATA.nodes[state.nodeId];
+  $("title").textContent = node.title || DATA.appTitle;
+  $("subtitle").textContent = DATA.subtitle;
+  $("prompt").textContent = node.prompt || "";
+  $("body").textContent = node.body || "";
+
+  $("stat-reports").textContent = `Reports: ${state.stats.reports}`;
+  $("stat-referrals").textContent = `Referrals: ${state.stats.referrals}`;
+  $("stat-loops").textContent = `Loops: ${state.stats.loops}`;
+
+  const choices = $("choices");
+  choices.innerHTML = "";
+  (node.choices || []).forEach((c) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = c.text;
+    b.onclick = () => go(c.to, c.effect);
+    choices.appendChild(b);
+  });
+
+  // sources box content
+  $("sources").innerHTML = SOURCES.map(s => `• <a href="${s.url}" target="_blank" rel="noopener noreferrer">${s.label}</a>`).join("<br>");
+  $("footer").textContent = DATA.footer;
+
+  $("backBtn").disabled = state.history.length === 0;
+}
+
+function go(to, effect) {
+  state.history.push(state.nodeId);
+  applyEffect(effect);
+  state.nodeId = to;
+  render();
+}
+
+$("backBtn").addEventListener("click", () => {
+  if (!state.history.length) return;
+  state.nodeId = state.history.pop();
+  render();
+});
+
+$("restartBtn").addEventListener("click", () => {
+  state = { nodeId: "start", history: [], stats: { reports: 0, referrals: 0, loops: 0 } };
+  render();
+});
+
+$("shareBtn").addEventListener("click", async () => {
+  const shareText = `${DATA.appTitle} — an interactive guide to reporting noise/odour/air pollution.\n(Host this page and share the link.)`;
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: DATA.appTitle, text: shareText, url: location.href });
+    } else {
+      await navigator.clipboard.writeText(location.href);
+      alert("Link copied to clipboard.");
+    }
+  } catch (_) {
+    // no-op
+  }
+});
+
+render();
+</script>
+</body>
+</html>
