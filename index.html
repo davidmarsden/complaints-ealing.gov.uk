@@ -40,9 +40,9 @@
     }
     button:hover { background: rgba(255,255,255,0.10); }
     button:active { transform: translateY(1px); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
     .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
     .smallbtn { font-size: 13px; padding: 8px 10px; border-radius: 10px; opacity: 0.95; }
-    .muted { opacity: 0.78; font-size: 13px; margin-top: 10px; }
     details { margin-top: 10px; }
     summary { cursor: pointer; opacity: 0.9; }
     .foot { opacity: 0.75; font-size: 12px; margin-top: 14px; }
@@ -56,11 +56,11 @@
       <p class="sub" id="subtitle"></p>
 
       <div class="meta">
-  <div class="pill" id="stat-reports">Reports: 0</div>
-  <div class="pill" id="stat-referrals">Referrals: 0</div>
-  <div class="pill" id="stat-loops">Loops: 0</div>
-  <div class="pill" id="stat-panels">Panels: 0</div>
-</div>
+        <div class="pill" id="stat-reports">Reports: 0</div>
+        <div class="pill" id="stat-referrals">Referrals: 0</div>
+        <div class="pill" id="stat-loops">Loops: 0</div>
+        <div class="pill" id="stat-panels">Panels: 0</div>
+      </div>
 
       <div class="prompt" id="prompt"></div>
       <div class="body" id="body"></div>
@@ -78,20 +78,16 @@
         <div class="foot" id="sources"></div>
       </details>
 
-<details id="panelBox" style="display:none;">
-  <summary>ⓘ What the Air Quality Scrutiny Panel heard (27 Sept 2018)</summary>
-  <div class="foot" id="panelNotes"></div>
-</details>
+      <details id="panelBox" style="display:none;">
+        <summary>ⓘ What the Air Quality Scrutiny Panel heard (27 Sept 2018)</summary>
+        <div class="foot" id="panelNotes"></div>
+      </details>
 
       <div class="foot" id="footer"></div>
     </div>
   </div>
 
 <script>
-/**
- * “No Further Action at This Time”
- * Lightweight state machine + Ealing phrasing (see SOURCES below)
- */
 const SOURCES = [
   { label: "Report a noise nuisance (020 8825 8111)", url: "https://www.ealing.gov.uk/info/201146/neighbourhood_and_streets/2053/noise_nuisances/2" },
   { label: "Investigating your complaint (logging sheets)", url: "https://www.ealing.gov.uk/info/201146/neighbourhood_and_streets/2053/noise_nuisances/3" },
@@ -103,8 +99,6 @@ const SOURCES = [
 ];
 
 const PANEL = {
-  // Key excerpts you wrote up from:
-  // Scrutiny Panel 3 (Air Quality), Committee Room 3, Ealing Town Hall, 27 Sept 2018
   nodes: {
     industrial_control: [
       "John Freeman (Ealing): “Odours produce symptoms.”",
@@ -159,7 +153,7 @@ const DATA = {
         { text: "Smell / odour", to: "categorise_odour", effect: { reports: 1 } },
         { text: "Dust / fumes", to: "categorise_odour", effect: { reports: 1 } },
         { text: "A combination of the above", to: "categorise_combo", effect: { reports: 1 } },
-{ text: "Read the real stories", to: "real_stories" },
+        { text: "Read the real stories", to: "real_stories" },
       ],
     },
 
@@ -323,7 +317,7 @@ It also notes a phone number for leaving messages during weekday hours.`,
 
     await_outcome: {
       title: "Await outcome",
-      prompt: “Thank you. Your report has been logged. We will assess whether a statutory nuisance exists.”,
+      prompt: "Thank you. Your report has been logged. We will assess whether a statutory nuisance exists.",
       body:
 `At this point, you may receive:
 • a request for more evidence
@@ -334,7 +328,7 @@ It also notes a phone number for leaving messages during weekday hours.`,
 If the nuisance continues, you can report it again.`,
       choices: [
         { text: "The nuisance continues → report again", to: "start", effect: { reports: 1, loops: 1 } },
-       { text: "I read the monitoring/reassurance updates", to: "reassurance", effect: { panels: 1 } },
+        { text: "I read the monitoring/reassurance updates", to: "reassurance", effect: { panels: 1 } },
         { text: "Stop engaging", to: "end_silence" },
       ],
     },
@@ -347,7 +341,7 @@ If the nuisance continues, you can report it again.`,
 
 It also notes comparisons against health-based standards and odour thresholds.`,
       choices: [
-     { text: "This doesn’t reflect my lived experience", to: "role_reversal", effect: { loops: 1, panels: 1 } },
+        { text: "This doesn’t reflect my lived experience", to: "role_reversal", effect: { loops: 1, panels: 1 } },
         { text: "Okay", to: "end_silence" },
         { text: "Report again anyway", to: "start", effect: { reports: 1, loops: 1 } },
       ],
@@ -378,6 +372,7 @@ complaint volume decreases.`,
       choices: [
         { text: "Start again", to: "start" },
         { text: "Share this", to: "share" },
+        { text: "Read the real stories", to: "real_stories" },
       ],
     },
 
@@ -394,7 +389,7 @@ THE PROBLEM IS YOU.`,
       choices: [
         { text: "Start again", to: "start" },
         { text: "Share this", to: "share" },
-{ text: "Read the real stories", to: "real_stories" },
+        { text: "Read the real stories", to: "real_stories" },
       ],
     },
 
@@ -404,12 +399,17 @@ THE PROBLEM IS YOU.`,
       body:
 `If you host this file on your site, share that URL.
 
-If you’re reading it locally, a screenshot works just fine.
+If you’re reading it locally, a screenshot works just fine.`,
+      choices: [
+        { text: "Back to start", to: "start" },
+        { text: "Read the real stories", to: "real_stories" },
+      ],
+    },
 
-real_stories: {
-  title: "Read the real stories",
-  prompt: "Three perspectives: lived experience, official reassurance, and the punchline.",
-  body:
+    real_stories: {
+      title: "Read the real stories",
+      prompt: "Three perspectives: lived experience, official reassurance, and the punchline.",
+      body:
 `These are the posts that sit behind the maze:
 
 • I had the noise pollution (lived experience)
@@ -417,49 +417,46 @@ real_stories: {
 • Strawberries for Pigs (the cultural diagnosis)
 
 They open in new tabs so you don’t lose your place.`,
-  choices: [
-    { text: "Open: I had the noise pollution", to: "open_story_noise" },
-    { text: "Open: VisitSouthall (recordID=1168)", to: "open_story_visit" },
-    { text: "Open: Strawberries for Pigs", to: "open_story_pigs" },
-    { text: "Back", to: "start" },
-  ],
-},
-open_story_noise: {
-  title: "Opening…",
-  prompt: "Lived experience",
-  body: "If the link didn’t open, your browser may be blocking popups. You can click again or use the Share button.",
-  onEnterOpen: "https://davidmarsden.info/2025/07/09/i-had-the-noise-pollution.html",
-  choices: [
-    { text: "Open again", to: "open_story_noise" },
-    { text: "Back to Real stories", to: "real_stories" },
-    { text: "Back to start", to: "start" },
-  ],
-},
-open_story_visit: {
-  title: "Opening…",
-  prompt: "Official-ish reassurance tone",
-  body: "If the link didn’t open, click ‘Open again’ (some browsers block automatic opens).",
-  onEnterOpen: "https://www.visitsouthall.co.uk/News/NewsDetails.php?recordID=1168",
-  choices: [
-    { text: "Open again", to: "open_story_visit" },
-    { text: "Back to Real stories", to: "real_stories" },
-    { text: "Back to start", to: "start" },
-  ],
-},
-open_story_pigs: {
-  title: "Opening…",
-  prompt: "The punchline",
-  body: "If the link didn’t open, click ‘Open again’.",
-  onEnterOpen: "https://southallstories.uk/2021/04/14/strawberries-for-pigs/",
-  choices: [
-    { text: "Open again", to: "open_story_pigs" },
-    { text: "Back to Real stories", to: "real_stories" },
-    { text: "Back to start", to: "start" },
-  ],
-},
-
-(You can also add a “Real stories” button to point at your posts.)`,
       choices: [
+        { text: "Open: I had the noise pollution", to: "open_story_noise" },
+        { text: "Open: VisitSouthall (recordID=1168)", to: "open_story_visit" },
+        { text: "Open: Strawberries for Pigs", to: "open_story_pigs" },
+        { text: "Back", to: "start" },
+      ],
+    },
+
+    open_story_noise: {
+      title: "Opening…",
+      prompt: "Lived experience",
+      body: "If the link didn’t open, your browser may be blocking popups. Tap ‘Open again’.",
+      onEnterOpen: "https://davidmarsden.info/2025/07/09/i-had-the-noise-pollution.html",
+      choices: [
+        { text: "Open again", to: "open_story_noise" },
+        { text: "Back to Real stories", to: "real_stories" },
+        { text: "Back to start", to: "start" },
+      ],
+    },
+
+    open_story_visit: {
+      title: "Opening…",
+      prompt: "Official-ish reassurance tone",
+      body: "If the link didn’t open, tap ‘Open again’.",
+      onEnterOpen: "https://www.visitsouthall.co.uk/News/NewsDetails.php?recordID=1168",
+      choices: [
+        { text: "Open again", to: "open_story_visit" },
+        { text: "Back to Real stories", to: "real_stories" },
+        { text: "Back to start", to: "start" },
+      ],
+    },
+
+    open_story_pigs: {
+      title: "Opening…",
+      prompt: "The punchline",
+      body: "If the link didn’t open, tap ‘Open again’.",
+      onEnterOpen: "https://southallstories.uk/2021/04/14/strawberries-for-pigs/",
+      choices: [
+        { text: "Open again", to: "open_story_pigs" },
+        { text: "Back to Real stories", to: "real_stories" },
         { text: "Back to start", to: "start" },
       ],
     },
@@ -474,6 +471,15 @@ let state = {
   stats: { reports: 0, referrals: 0, loops: 0, panels: 0 },
 };
 
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function applyEffect(effect) {
   if (!effect) return;
   for (const [k, v] of Object.entries(effect)) {
@@ -483,13 +489,31 @@ function applyEffect(effect) {
 
 function render() {
   const node = DATA.nodes[state.nodeId];
+
   $("title").textContent = node.title || DATA.appTitle;
   $("subtitle").textContent = DATA.subtitle;
   $("prompt").textContent = node.prompt || "";
   $("body").textContent = node.body || "";
 
-// Panels stat
+  $("stat-reports").textContent = `Reports: ${state.stats.reports}`;
+  $("stat-referrals").textContent = `Referrals: ${state.stats.referrals}`;
+  $("stat-loops").textContent = `Loops: ${state.stats.loops}`;
   $("stat-panels").textContent = `Panels: ${state.stats.panels}`;
+
+  const choices = $("choices");
+  choices.innerHTML = "";
+  (node.choices || []).forEach((c) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = c.text;
+    b.onclick = () => go(c.to, c.effect);
+    choices.appendChild(b);
+  });
+
+  // Official links
+  $("sources").innerHTML = SOURCES
+    .map(s => `• <a href="${s.url}" target="_blank" rel="noopener noreferrer">${s.label}</a>`)
+    .join("<br>");
 
   // Panel notes toggle
   const panelBox = $("panelBox");
@@ -504,25 +528,14 @@ function render() {
     panelNotes.innerHTML = "";
   }
 
-  $("stat-reports").textContent = `Reports: ${state.stats.reports}`;
-  $("stat-referrals").textContent = `Referrals: ${state.stats.referrals}`;
-  $("stat-loops").textContent = `Loops: ${state.stats.loops}`;
-
-  const choices = $("choices");
-  choices.innerHTML = "";
-  (node.choices || []).forEach((c) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.textContent = c.text;
-    b.onclick = () => go(c.to, c.effect);
-    choices.appendChild(b);
-  });
-
-  // sources box content
-  $("sources").innerHTML = SOURCES.map(s => `• <a href="${s.url}" target="_blank" rel="noopener noreferrer">${s.label}</a>`).join("<br>");
   $("footer").textContent = DATA.footer;
-
   $("backBtn").disabled = state.history.length === 0;
+
+  // Optional: open a URL when entering a node (best effort)
+  if (node.onEnterOpen && !node._opened) {
+    node._opened = true; // prevent repeated opens on re-render
+    try { window.open(node.onEnterOpen, "_blank", "noopener,noreferrer"); } catch (_) {}
+  }
 }
 
 function go(to, effect) {
@@ -544,7 +557,7 @@ $("restartBtn").addEventListener("click", () => {
 });
 
 $("shareBtn").addEventListener("click", async () => {
-  const shareText = `${DATA.appTitle} — an interactive guide to reporting noise/odour/air pollution.\n(Host this page and share the link.)`;
+  const shareText = `${DATA.appTitle} — an interactive guide to reporting noise/odour/air pollution.`;
   try {
     if (navigator.share) {
       await navigator.share({ title: DATA.appTitle, text: shareText, url: location.href });
@@ -555,24 +568,9 @@ $("shareBtn").addEventListener("click", async () => {
   } catch (_) {
     // no-op
   }
-
-// Optional: open a URL when entering a node
-  if (node.onEnterOpen) {
-    try { window.open(node.onEnterOpen, "_blank", "noopener,noreferrer"); } catch (_) {}
-  }
 });
 
 render();
-
-function escapeHtml(str) {
-  return String(str)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
 </script>
 </body>
 </html>
