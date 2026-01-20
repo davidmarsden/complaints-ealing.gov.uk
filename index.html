@@ -4,86 +4,220 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>No Further Action at This Time</title>
+
+  <!-- Social preview -->
+  <meta name="description" content="An interactive guide based on real complaints and official web guidance." />
+  <meta property="og:title" content="No Further Action at This Time" />
+  <meta property="og:description" content="An interactive guide based on real complaints and official web guidance." />
+  <meta property="og:type" content="website" />
+
   <style>
     :root { color-scheme: light dark; }
-    body {
-      margin: 0; font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: #0b0c10; color: #e6e6e6;
+
+    body{
+      margin:0;
+      font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:#f2f2f2;
+      color:#1a1a1a;
     }
-    .wrap { max-width: 860px; margin: 0 auto; padding: 20px; }
-    .card {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 16px;
-      padding: 18px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+
+    .wrap{max-width:980px;margin:0 auto;padding:0 14px 40px;}
+
+    .card{
+      background:#fff;
+      border:1px solid #d9d9d9;
+      border-radius:8px;
+      padding:0;
+      box-shadow:0 8px 24px rgba(0,0,0,0.08);
+      overflow:hidden;
     }
-    h1 { font-size: 26px; margin: 0 0 8px; letter-spacing: 0.2px; }
-    .sub { opacity: 0.85; margin: 0 0 14px; }
-    .meta {
-      display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0 0;
-      font-size: 13px; opacity: 0.85;
+
+    /* Ealing-ish header vibe (generic) */
+    .sitehead{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      padding:14px 16px;
+      background:#ffffff;
+      border-bottom:1px solid #e5e5e5;
     }
-    .pill {
-      padding: 6px 10px; border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(255,255,255,0.04);
+
+    .brand{display:flex;align-items:center;gap:12px;min-width:0;}
+    .logo{
+      width:44px;height:44px;border-radius:6px;
+      background: linear-gradient(135deg,#0b7a3e,#20a65a);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.5);
+      flex: 0 0 auto;
     }
-    .prompt { font-size: 18px; margin: 10px 0 14px; }
-    .body { white-space: pre-wrap; margin: 0 0 16px; opacity: 0.95; }
-    .btns { display: grid; gap: 10px; margin-top: 8px; }
-    button {
-      appearance: none; border: 1px solid rgba(255,255,255,0.16);
-      background: rgba(255,255,255,0.06); color: inherit;
-      padding: 12px 14px; border-radius: 12px; cursor: pointer;
-      text-align: left; transition: transform 0.04s ease, background 0.15s ease;
+    .brandtext{min-width:0;}
+    .brandtext .council{font-weight:700;font-size:18px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .brandtext .unofficial{font-size:12px;opacity:0.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+    .topnav{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
+    .topbtn{
+      font-size:13px;
+      padding:8px 10px;
+      border:1px solid #d9d9d9;
+      background:#fff;
+      border-radius:6px;
+      opacity:0.9;
     }
-    button:hover { background: rgba(255,255,255,0.10); }
-    button:active { transform: translateY(1px); }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
-    .smallbtn { font-size: 13px; padding: 8px 10px; border-radius: 10px; opacity: 0.95; }
-    details { margin-top: 10px; }
-    summary { cursor: pointer; opacity: 0.9; }
-    .foot { opacity: 0.75; font-size: 12px; margin-top: 14px; }
-    a { color: #9fd3ff; }
+
+    .crumbs{
+      padding:10px 16px;
+      font-size:13px;
+      color:#4d4d4d;
+      background:#fafafa;
+      border-bottom:1px solid #eaeaea;
+    }
+
+    .pagehead{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:16px;
+      padding:14px 16px;
+      background:#0b7a3e;
+      color:#fff;
+    }
+
+    .kicker{font-size:26px;font-weight:700;letter-spacing:0.2px;}
+    .servicebtn{
+      background:#0a6a35;
+      border:1px solid rgba(255,255,255,0.35);
+      color:#fff;
+      padding:10px 12px;
+      border-radius:6px;
+      font-size:14px;
+    }
+
+    .content{padding:16px;}
+
+    h1{font-size:22px;margin:0 0 6px;}
+    .sub{opacity:0.8;margin:0 0 14px;font-size:14px;}
+
+    .meta{
+      display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 0;
+      font-size:13px;color:#333;
+    }
+
+    .pill{
+      padding:6px 10px;border-radius:999px;
+      border:1px solid #d9d9d9;
+      background:#f7f7f7;
+    }
+
+    .prompt{font-size:18px;margin:10px 0 12px;}
+    .body{white-space:pre-wrap;margin:0 0 14px;color:#222;}
+
+    .btns{display:grid;gap:10px;margin-top:8px;}
+    button{
+      appearance:none;
+      border:1px solid #d0d0d0;
+      background:#f7f7f7;
+      color:#1a1a1a;
+      padding:12px 14px;
+      border-radius:8px;
+      cursor:pointer;
+      text-align:left;
+      transition:transform .04s ease, background .15s ease;
+    }
+    button:hover{background:#ededed;}
+    button:active{transform:translateY(1px);}
+    button:disabled{opacity:.55;cursor:not-allowed;}
+
+    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+    .smallbtn{font-size:13px;padding:8px 10px;border-radius:8px;}
+
+    details{margin-top:10px;}
+    summary{cursor:pointer;}
+    .foot{opacity:0.8;font-size:12px;margin-top:10px;color:#333;}
+    a{color:#0b7a3e;text-decoration:underline;}
+
+    @media (prefers-color-scheme: dark){
+      body{background:#0b0c10;color:#e6e6e6;}
+      .card{background:#121318;border-color:#2b2d36;}
+      .sitehead{background:#121318;border-bottom-color:#2b2d36;}
+      .crumbs{background:#0f1015;border-bottom-color:#2b2d36;color:#c7c7c7;}
+      .pagehead{background:#0b7a3e;}
+      .topbtn{background:#121318;border-color:#2b2d36;color:#e6e6e6;}
+      .pill{background:#1a1c24;border-color:#2b2d36;color:#e6e6e6;}
+      button{background:#1a1c24;border-color:#2b2d36;color:#e6e6e6;}
+      button:hover{background:#222531;}
+      .body{color:#e6e6e6;}
+      a{color:#9fd3ff;}
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card" id="app" aria-live="polite">
-      <h1 id="title"></h1>
-      <p class="sub" id="subtitle"></p>
 
-      <div class="meta">
-        <div class="pill" id="stat-reports">Reports: 0</div>
-        <div class="pill" id="stat-referrals">Referrals: 0</div>
-        <div class="pill" id="stat-loops">Loops: 0</div>
-        <div class="pill" id="stat-panels">Panels: 0</div>
+      <header class="sitehead" role="banner">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div class="brandtext">
+            <div class="council">Ealing Council</div>
+            <div class="unofficial">UNOFFICIAL SATIRE • “Failing, at this time”</div>
+          </div>
+        </div>
+
+        <div class="topnav" aria-label="Site tools">
+          <button type="button" class="topbtn" disabled>A-Z</button>
+          <button type="button" class="topbtn" disabled>Jobs</button>
+          <button type="button" class="topbtn" disabled>Do it online</button>
+          <button type="button" class="topbtn" disabled>Contact us</button>
+        </div>
+      </header>
+
+      <nav class="crumbs" aria-label="Breadcrumb">
+        Home <span aria-hidden="true">/</span> Neighbourhood and streets <span aria-hidden="true">/</span> Noise nuisances
+      </nav>
+
+      <div class="pagehead">
+        <div class="kicker">Noise nuisances</div>
+        <div class="service">
+          <button type="button" class="servicebtn" disabled>
+            Council Services <span aria-hidden="true">▾</span>
+          </button>
+        </div>
       </div>
 
-      <div class="prompt" id="prompt"></div>
-      <div class="body" id="body"></div>
+      <div class="content">
+        <h1 id="title"></h1>
+        <p class="sub" id="subtitle"></p>
 
-      <div class="btns" id="choices"></div>
+        <div class="meta">
+          <div class="pill" id="stat-reports">Reports: 0</div>
+          <div class="pill" id="stat-referrals">Referrals: 0</div>
+          <div class="pill" id="stat-loops">Loops: 0</div>
+          <div class="pill" id="stat-panels">Panels: 0</div>
+        </div>
 
-      <div class="row">
-        <button class="smallbtn" id="backBtn" type="button">← Back</button>
-        <button class="smallbtn" id="restartBtn" type="button">↻ Start again</button>
-        <button class="smallbtn" id="shareBtn" type="button">⤴ Share</button>
+        <div class="prompt" id="prompt"></div>
+        <div class="body" id="body"></div>
+
+        <div class="btns" id="choices"></div>
+
+        <div class="row">
+          <button class="smallbtn" id="backBtn" type="button">← Back</button>
+          <button class="smallbtn" id="restartBtn" type="button">↻ Start again</button>
+          <button class="smallbtn" id="shareBtn" type="button">⤴ Share</button>
+        </div>
+
+        <details id="sourcesBox">
+          <summary>Official wording referenced (links)</summary>
+          <div class="foot" id="sources"></div>
+        </details>
+
+        <details id="panelBox" style="display:none;">
+          <summary>ⓘ What the Air Quality Scrutiny Panel heard (27 Sept 2018)</summary>
+          <div class="foot" id="panelNotes"></div>
+        </details>
+
+        <div class="foot" id="footer"></div>
       </div>
-
-      <details id="sourcesBox">
-        <summary>Official wording referenced (links)</summary>
-        <div class="foot" id="sources"></div>
-      </details>
-
-      <details id="panelBox" style="display:none;">
-        <summary>ⓘ What the Air Quality Scrutiny Panel heard (27 Sept 2018)</summary>
-        <div class="foot" id="panelNotes"></div>
-      </details>
-
-      <div class="foot" id="footer"></div>
     </div>
   </div>
 
@@ -490,8 +624,14 @@ function applyEffect(effect) {
 function render() {
   const node = DATA.nodes[state.nodeId];
 
+  // Option 3: Easter egg mode (subtitle changes after enough loops)
+  const failingMode = state.stats.loops >= 5;
+
   $("title").textContent = node.title || DATA.appTitle;
-  $("subtitle").textContent = DATA.subtitle;
+  $("subtitle").textContent = failingMode
+    ? 'Ealing Council • "Failing, at this time"'
+    : DATA.subtitle;
+
   $("prompt").textContent = node.prompt || "";
   $("body").textContent = node.body || "";
 
